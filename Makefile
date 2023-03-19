@@ -1,1 +1,2 @@
-gcc -g -o test test.cpp
+all:
+	g++ -g -o test test.cpp
