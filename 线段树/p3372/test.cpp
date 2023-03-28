@@ -1,100 +1,91 @@
 #include <bits/stdc++.h>
 #include <cmath>
 using namespace std;
+const int maxn = 100001;
 int n, m;
-int a[100000];
+int a[maxn];
 struct Node{
-  long long sum;
-  long long added;
+  long long sum, added;
   int left;
   int right;
-  Node *left_child;
-  Node *right_child;
-  Node(int val, int left, int right) : sum(val), left(left), right(right), left_child(nullptr), right_child(nullptr) {}
-};
+} tree[4 * maxn + 2];
 
-Node *root;
-
-Node *build(int left, int right) {
+void build(int p, int left, int right) {
+  tree[p].left = left; tree[p].right = right;
   if (left == right) {
-    return new Node(a[left], left, right);
-  }
-
-  Node *res = new Node(0, left, right);
-  int mid = (left + right) / 2;
-  res->left_child = build(left, mid);
-  res->right_child = build(mid + 1, right);
-  res->sum = res->left_child->sum + res->right_child->sum;
-  return res;
-}
-
-void push_down(Node *node) {
-  if (node->added == 0 || node->left == node->right)
+    tree[p].sum = a[left];
     return;
-
-  long long num = node->added;
-  node->left_child->added += num;
-  node->right_child->added += num;
+  }
   
-  Node *change = node->left_child;
-  change->sum += (change->right - change->left + 1) * num;
-  change = node->right_child;
-  change->sum += (change->right - change->left + 1) * num;
-
-  node->added = 0;
+  int mid = (left + right) / 2;
+  build(2 * p, left, mid);
+  build(2 * p + 1, mid + 1, right);
+  tree[p].sum = tree[2 * p].sum + tree[2 * p + 1].sum;
 }
 
 
-void ADD(Node *node, int left, int right, int k) {
-  if (left <= node->left && right >= node->right) {
-    node->sum += (node->right - node->left + 1) * k;
-    node->added += k;
+void push_down(int p) {
+  if (tree[p].added == 0)
+    return;
+
+  long long num = tree[p].added;
+  tree[2 * p].added += num;
+  tree[2 * p + 1].added += num;
+  
+  tree[2 * p].sum += (tree[2 * p].right - tree[2 * p].left + 1) * num;
+  tree[2 * p + 1].sum += (tree[2 * p + 1].right - tree[2 * p + 1].left + 1) * num;
+  tree[p].added = 0;
+}
+
+
+void ADD(int p, int left, int right, int k) {
+  if (left <= tree[p].left && right >= tree[p].right) {
+    tree[p].sum += (tree[p].right - tree[p].left + 1) * k;
+    tree[p].added += k;
     return;
   }
 
-  push_down(node);
-  int mid = (node->left + node->right) / 2;
-  if (mid >= left) {
-    ADD(node->left_child, left, right, k);
-  }
-  if (mid < right) {
-    ADD(node->right_child, left, right, k);
-  }
-  node->sum = node->left_child->sum + node->right_child->sum;
+  push_down(p);
+  int mid = (tree[p].left + tree[p].right) / 2;
+  if (mid >= left) 
+    ADD(2 * p, left, right, k);
+  if (mid < right)
+    ADD(2 * p + 1, left, right, k);
+
+  tree[p].sum = tree[2 * p].sum + tree[2 * p + 1].sum;
 }
 
 
-long long SUM(Node *node, int left, int right) {
-  if (left <= node->left && right >= node->right) {
-    return node->sum;
+long long SUM(int p, int left, int right) {
+  if (left <= tree[p].left && right >= tree[p].right) {
+    return tree[p].sum;
   }
 
-  push_down(node);
+  push_down(p);
   long long ans = 0;
-  int mid = (node->left + node->right) / 2;
+  int mid = (tree[p].left + tree[p].right) / 2;
   if (mid >= left)
-    ans += SUM(node->left_child, left, right);
+    ans += SUM(2 * p, left, right);
   if (mid < right)
-    ans += SUM(node->right_child, left, right);
-
+    ans += SUM(2 * p + 1, left, right);
   return ans;
 }
 
 int main() {
   cin >> n >> m;
-  for (int i = 0; i < n; ++i)
+  for (int i = 1; i <= n; ++i)
     cin >> a[i];
 
-  root = build(0, n - 1);
+  build(1, 1, n);
 
   int op, x, y, k;
   for (int i = 0; i < m; ++i) {
     cin >> op >> x >> y;
     if (op == 1) {
       cin >> k;
-      ADD(root, x - 1, y - 1, k);
+      ADD(1, x, y, k);
     } else {
-      cout << SUM(root, x - 1, y - 1) << endl;
+      cout << SUM(1, x, y) << endl;
     }
   }
   return 0;
