@@ -3,24 +3,20 @@ using namespace std;
 const int maxn = 100010;
 int n, m, mod;
 int a[maxn];
-
-
 struct Node{
   int left, right;
   long long add, mul;
   long long sum;
 } tree[4 * maxn];
 
-
 void build(int p, int left, int right) {
-  tree[p].left = left; tree[p].right = right;
-  tree[p].mul = 1;
+  tree[p].left = left; tree[p].right = right; tree[p].mul = 1;
   if (left == right) {
     tree[p].sum = a[left] % mod;
     return;
   }
   
-  int mid = (left + right) >> 1;
+  int mid = (left + right) / 2;
   build(2 * p, left, mid);
   build(2 * p + 1, mid + 1, right);
   tree[p].sum = (tree[2 * p].sum + tree[2 * p + 1].sum) % mod;
@@ -56,10 +52,10 @@ void push_down(int p) {
 
 void ad(int p, int left, int right, int k) {
   if (left <= tree[p].left && right >= tree[p].right) {
-    tree[p].add += k;
-    tree[p].add %= mod;
     tree[p].sum += (tree[p].right - tree[p].left + 1) * k;
     tree[p].sum %= mod;
+    tree[p].add += k;
+    tree[p].add %= mod;
     return;
   }
   
@@ -69,6 +65,7 @@ void ad(int p, int left, int right, int k) {
     ad(2 * p, left, right, k);
   if (mid < right)
     ad(2 * p + 1, left, right, k);
+
   tree[p].sum = tree[2 * p].sum + tree[2 * p + 1].sum;
   tree[p].sum %= mod;
 }
@@ -136,4 +133,3 @@ int main()
   }
   return 0;
 }
-
