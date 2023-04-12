@@ -2,23 +2,29 @@
 #include <bits/stdc++.h>
 #include <cstddef>
 #include <cstdint>
+#include <unordered_map>
 #include <vector>
 using namespace std;
+
+int a[200001];
 int main()
 {
   size_t n, c;
   cin >> n >> c;
-  vector<size_t> nums(n);
+  unordered_map<int ,int> counter;
   for (int i = 0; i < n; ++i) {
-    cin >> nums[i];
+    cin >> a[i];
+    counter[a[i]]++;
   }
-  sort(nums.begin(), nums.end());
   
-  unsigned res = 0;
+  long long ans = 0;
   for (int i = 0; i < n; ++i) {
-    res += upper_bound(nums.begin(), nums.end(), nums[i] + c) - lower_bound(nums.begin(), nums.end(), nums[i] + c);
+    int target = a[i] - c;
+    if (counter.count(target)) {
+      ans += counter[target];
+    }
   }
-  cout << res << endl;
+
+  cout << ans << endl;
   return 0;
 }
-
